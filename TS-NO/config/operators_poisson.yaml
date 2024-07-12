@@ -1,0 +1,89 @@
+default: &DEFAULT
+  num_data_workers: 1
+  # model
+  model: 'fno'
+  depth: 5
+  in_dim: 2
+  out_dim: 1
+  dropout: 0
+  # data/domain
+  Lx: !!float 1.0
+  Ly: !!float 1.0
+  nx: 256
+  ny: 256
+  # optimization
+  weights: '/hy-tmp/model_save/expts/poisson-scale-k1_5/po5-7teacher/checkpoints/ckpt_best.tar'
+  loss_style: 'mean'
+  loss_func: 'mse'
+  optimizer: 'adam'
+  scheduler: 'none'
+  lr: !!float 1.0
+  max_epochs: 300
+  max_cosine_lr_epochs: 300
+  batch_size: 16
+  # misc
+  log_to_screen: !!bool True
+  save_checkpoint: !!bool False
+  seed: 3407
+  plot_figs: !!bool False
+  pack_data: !!bool False
+  # Weights & Biases
+  entity: 'your_wandb_entity'
+  project: 'your_wandb_project'
+  log_to_wandb: !!bool False
+  distill: !!bool False
+  subsample: 1
+
+poisson: &poisson
+  <<: *DEFAULT
+  batch_size: 16
+  valid_batch_size: 16
+  nx: 128
+  ny: 128
+  log_to_wandb: !!bool False
+  save_checkpoint: !!bool True
+  max_epochs: 300
+  scheduler: 'cosine'
+  plot_figs: !!bool True
+  loss_style: 'sum'
+  system: 'poisson'
+
+  model: 'fno'
+  layers: [64, 64, 64, 64, 64]
+  modes1: [65, 65, 65, 65]
+  modes2: [65, 65, 65, 65]
+  fc_dim: 128
+
+  in_dim: 4
+  out_dim: 1
+  mode_cut: 16
+  embed_cut: 64
+  fc_cut: 2
+
+  optimizer: 'adam'
+
+  lr: 1E-3
+  pack_data: !!bool False
+
+poisson-scale-k1_5: &poisson_scale_k1_5
+  <<: *poisson
+  train_path:    '/hy-tmp/data/po1-5/_train_k1_5_32k.h5'
+  val_path:      '/hy-tmp/data/po5-7/_val_k5_7_4k.h5'
+  test_path:     '/hy-tmp/data/po5-7/_test_k1_5_4k.h5'
+  scales_path:   '/hy-tmp/data/po1-5/_train_k1_5_scales.npy'
+  
+  train_novel_path:    '/hy-tmp/data/po5-7/_train_k5_7_32k.h5'
+  val_novel_path:      '/hy-tmp/data/po5-7/_val_k5_7_4k.h5'
+  test_novel_path:     '/hy-tmp/data/po5-7/_test_k5_7_4k.h5'
+  scales_novel_path:   '/hy-tmp/data/po5-7/_train_k5_7_scales.npy'
+  
+  batch_size: 8
+  valid_batch_size: 8
+  
+  batch_size_novel: 40
+  valid_batch_size_novel: 40
+  
+  log_to_wandb: !!bool False
+  mode_cut: 32
+  embed_cut: 64
+  fc_cut: 2
